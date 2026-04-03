@@ -1,15 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getTransactionsList, type TransactionRow } from "@/features/transactions/queries.server";
-import { formatCurrencyCode } from "@/lib/currency";
+import { TransactionsTable } from "@/features/transactions/components/transactions-table";
+import { getTransactionsList } from "@/features/transactions/queries.server";
 import { createClient } from "@/lib/supabase/server";
-import { embedSingle } from "@/lib/utils";
-
-function rowBaseSum(row: TransactionRow): number {
-  const lines = row.transaction_lines ?? [];
-  return lines.reduce((s, l) => s + Number(l.base_amount), 0);
-}
 
 export default async function TransactionsPage() {
   const supabase = await createClient();
@@ -26,27 +19,38 @@ export default async function TransactionsPage() {
     if (prof?.base_currency) baseCurrency = prof.base_currency;
   }
 
-  const { data: rows, error } = await getTransactionsList(200);
+  const { data: rows, error } = await getTransactionsList(500);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+  if (error) {
+    return (
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
           <p className="text-sm text-muted-foreground">
             Ledger entries in {baseCurrency}.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/transactions/new">New transaction</Link>
-        </Button>
-      </div>
-
-      {error ? (
         <p className="text-sm text-destructive" role="alert">
           {error.message}
         </p>
-      ) : !rows?.length ? (
+      </div>
+    );
+  }
+
+  if (!rows?.length) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
+            <p className="text-sm text-muted-foreground">
+              Ledger entries in {baseCurrency}.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/transactions/new">New transaction</Link>
+          </Button>
+        </div>
         <p className="text-sm text-muted-foreground">
           No transactions yet.{" "}
           <Link
@@ -57,48 +61,9 @@ export default async function TransactionsPage() {
           </Link>
           .
         </p>
-      ) : (
-        <ul className="divide-y divide-border rounded-md border border-border">
-          {rows.map((row) => {
-            const cat = embedSingle<{ name: string }>(row.categories);
-            const baseSum = rowBaseSum(row);
-            return (
-              <li key={row.id}>
-                <Link
-                  href={`/transactions/${row.id}`}
-                  className="flex flex-wrap items-center justify-between gap-2 px-3 py-3 transition-colors hover:bg-muted/50"
-                >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="capitalize">
-                        {row.type}
-                      </Badge>
-                      <span className="text-muted-foreground tabular-nums text-xs">
-                        {row.date}
-                      </span>
-                    </div>
-                    <p className="truncate font-medium">
-                      {row.description || "—"}
-                    </p>
-                    {cat?.name ? (
-                      <p className="text-xs text-muted-foreground">{cat.name}</p>
-                    ) : null}
-                  </div>
-                  <div className="shrink-0 text-right">
-                    {row.type === "transfer" ? (
-                      <span className="text-sm text-muted-foreground">—</span>
-                    ) : (
-                      <span className="font-mono text-sm tabular-nums">
-                        {formatCurrencyCode(baseSum, baseCurrency)}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  return <TransactionsTable rows={rows} baseCurrency={baseCurrency} />;
 }

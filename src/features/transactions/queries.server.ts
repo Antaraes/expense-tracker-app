@@ -1,22 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 
-/** Nested FK embeds from PostgREST may be object or single-element array depending on typings. */
-export type TransactionRow = {
-  id: string;
-  type: string;
-  description: string | null;
-  date: string;
-  category_id: string | null;
-  categories: unknown;
-  transaction_lines: Array<{
-    id: string;
-    amount: string;
-    currency_code: string;
-    base_amount: string;
-    exchange_rate: string;
-    accounts: unknown;
-  }>;
-};
+import type { TransactionRow } from "@/features/transactions/transaction-list.types";
+
+export type { TransactionRow };
 
 export async function getTransactionsList(limit = 100) {
   const supabase = await createClient();
@@ -28,6 +14,8 @@ export async function getTransactionsList(limit = 100) {
       type,
       description,
       date,
+      created_at,
+      updated_at,
       category_id,
       categories(name, icon, color),
       transaction_lines(
