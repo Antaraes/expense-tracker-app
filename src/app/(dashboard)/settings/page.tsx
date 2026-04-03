@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ExchangeRatePanel } from "@/features/currencies/components/exchange-rate-panel";
+import { DangerZoneWipe } from "@/features/settings/components/danger-zone-wipe";
+import { NotificationPreferences } from "@/features/settings/components/notification-preferences";
 import { ExportSettingsActions } from "@/features/settings/components/export-actions";
 import { SettingsForm } from "@/features/settings/components/settings-form";
 import { createClient } from "@/lib/supabase/server";
@@ -45,6 +47,8 @@ export default async function SettingsPage() {
         accounts={accounts.data ?? []}
       />
       <ExportSettingsActions />
+      <NotificationPreferences />
+      <DangerZoneWipe />
       <ExchangeRatePanel
         currencies={(currencies.data ?? []).map((c) => ({
           code: c.code,

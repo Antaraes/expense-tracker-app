@@ -95,6 +95,10 @@ export interface Database {
         };
         Returns: string;
       };
+      wipe_user_finance_data: {
+        Args: Record<string, never>;
+        Returns: null;
+      };
     };
   };
 }

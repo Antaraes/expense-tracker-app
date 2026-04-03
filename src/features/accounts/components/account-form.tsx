@@ -33,6 +33,7 @@ export function AccountForm({
     name: string;
     type: AccountType;
     default_currency: string;
+    icon: string | null;
     color: string | null;
   };
 }) {
@@ -42,6 +43,7 @@ export function AccountForm({
   const [currency, setCurrency] = useState(
     initial?.default_currency ?? currencies[0]?.code ?? "THB"
   );
+  const [icon, setIcon] = useState(initial?.icon ?? "");
   const [color, setColor] = useState(initial?.color ?? "#6C5CE7");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -59,6 +61,7 @@ export function AccountForm({
         name: name.trim(),
         type,
         default_currency: currency,
+        icon: icon.trim() || null,
         color,
       });
       setLoading(false);
@@ -78,6 +81,7 @@ export function AccountForm({
       name: name.trim(),
       type,
       default_currency: currency,
+      icon: icon.trim() || null,
       color,
     });
     setLoading(false);
@@ -120,6 +124,12 @@ export function AccountForm({
               <option value="cash">Cash</option>
               <option value="credit_card">Credit card</option>
             </select>
+            {type === "credit_card" ? (
+              <p className="text-xs text-muted-foreground">
+                Credit cards can go negative when the ledger balance is below
+                zero.
+              </p>
+            ) : null}
           </div>
           <div className="space-y-2">
             <Label htmlFor="acc-ccy">Default currency</Label>
@@ -135,6 +145,18 @@ export function AccountForm({
                 </option>
               ))}
             </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="acc-icon">Icon (optional)</Label>
+            <Input
+              id="acc-icon"
+              value={icon}
+              onChange={(e) => setIcon(e.target.value)}
+              placeholder="e.g. wallet, building-2 (lucide name)"
+            />
+            <p className="text-xs text-muted-foreground">
+              Stored as text; you can map it in UI later.
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="acc-color">Color</Label>

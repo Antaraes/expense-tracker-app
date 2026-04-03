@@ -92,6 +92,7 @@ export default async function AccountDetailPage({
             name: accountRow.name,
             type: accountRow.type,
             default_currency: accountRow.default_currency,
+            icon: accountRow.icon,
             color: accountRow.color,
           }}
         />

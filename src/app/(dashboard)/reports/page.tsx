@@ -28,6 +28,19 @@ export default function ReportsPage() {
           </Card>
         </Link>
         <Link
+          href="/reports/weekly"
+          className="block rounded-lg outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Card className="h-full border-border transition-colors hover:bg-muted/40">
+            <CardHeader>
+              <CardTitle>Weekly overview</CardTitle>
+              <CardDescription>
+                Income and expenses by calendar week (Mon–Sun).
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+        <Link
           href="/reports/categories"
           className="block rounded-lg outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
         >
@@ -36,6 +49,19 @@ export default function ReportsPage() {
               <CardTitle>Spending by category</CardTitle>
               <CardDescription>
                 Expense totals grouped by category for the current month.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+        <Link
+          href="/reports/currency-exposure"
+          className="block rounded-lg outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Card className="h-full border-border transition-colors hover:bg-muted/40">
+            <CardHeader>
+              <CardTitle>Currency exposure</CardTitle>
+              <CardDescription>
+                Native balances summed by account currency.
               </CardDescription>
             </CardHeader>
           </Card>

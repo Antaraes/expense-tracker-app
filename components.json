@@ -3,6 +3,11 @@
   "style": "new-york",
   "rsc": true,
   "tsx": true,
+  "registries": {
+    "tweakcn": {
+      "url": "https://tweakcn.com/r/themes/registry.json"
+    }
+  },
   "tailwind": {
     "config": "",
     "css": "src/styles/globals.css",

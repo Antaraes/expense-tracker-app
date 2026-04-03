@@ -32,15 +32,26 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardDescription>Net worth</CardDescription>
+            <CardDescription>Net worth (ledger)</CardDescription>
             <CardTitle className="font-mono text-2xl tabular-nums">
               {formatCurrencyCode(summary.netWorth, c)}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-1">
             <p className="text-xs text-muted-foreground">
-              Sum of account balances ({c})
+              Sum of historical base amounts on each line ({c}).
             </p>
+            <p className="text-xs font-medium text-foreground">
+              Latest FX mark:{" "}
+              <span className="font-mono tabular-nums">
+                {formatCurrencyCode(summary.spotNetWorth, c)}
+              </span>
+            </p>
+            {summary.spotNetWorthNote ? (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                {summary.spotNetWorthNote}
+              </p>
+            ) : null}
           </CardContent>
         </Card>
         <Card className="border-border">

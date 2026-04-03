@@ -30,4 +30,14 @@ export const profilesService = {
       .select()
       .maybeSingle();
   },
+
+  /** Deletes all transactions, accounts, and custom categories for the current user. */
+  async wipeFinanceData() {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: new Error("Not signed in") };
+    return supabase.rpc("wipe_user_finance_data");
+  },
 };

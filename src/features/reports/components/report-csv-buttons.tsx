@@ -37,7 +37,13 @@ export function MonthlyReportCsvButton({
   }
 
   return (
-    <Button type="button" variant="outline" size="sm" onClick={() => void run()}>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="no-print"
+      onClick={() => void run()}
+    >
       Export CSV
     </Button>
   );
@@ -56,13 +62,15 @@ export function CategoryReportCsvButton({
 }) {
   async function run() {
     const total = rows.reduce((s, r) => s + r.total, 0);
-    const header = ["category", "amount", "share_pct"];
+    const header = ["category", "icon", "color", "amount", "share_pct"];
     const lines = [header.join(",")];
     for (const r of rows) {
       const pct = total > 0 ? (r.total / total) * 100 : 0;
       lines.push(
         [
           csvEscape(r.name),
+          csvEscape(r.icon ?? ""),
+          csvEscape(r.color ?? ""),
           csvEscape(r.total),
           csvEscape(pct.toFixed(2)),
         ].join(",")
@@ -76,7 +84,13 @@ export function CategoryReportCsvButton({
   }
 
   return (
-    <Button type="button" variant="outline" size="sm" onClick={() => void run()}>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="no-print"
+      onClick={() => void run()}
+    >
       Export CSV
     </Button>
   );

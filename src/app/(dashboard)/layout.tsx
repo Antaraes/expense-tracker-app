@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { createClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
 
 export default async function DashboardLayout({
   children,
@@ -16,15 +15,18 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Header email={user.email ?? ""} />
-        <main className="mx-auto w-full max-w-6xl flex-1 overflow-auto p-6">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardShell
+      email={user.email ?? ""}
+      displayName={profile?.display_name ?? null}
+    >
+      {children}
+    </DashboardShell>
   );
 }

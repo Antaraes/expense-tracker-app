@@ -22,6 +22,14 @@ const COLORS = [
   "#636E72",
 ];
 
+function sliceColor(r: CategoryExpenseRow, i: number): string {
+  const c = r.color?.trim();
+  if (c && /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(c)) {
+    return c;
+  }
+  return COLORS[i % COLORS.length];
+}
+
 export function CategoryReportChart({
   rows,
   baseCurrency,
@@ -32,7 +40,7 @@ export function CategoryReportChart({
   const data = rows.map((r, i) => ({
     name: r.name,
     value: r.total,
-    color: COLORS[i % COLORS.length],
+    color: sliceColor(r, i),
   }));
 
   return (

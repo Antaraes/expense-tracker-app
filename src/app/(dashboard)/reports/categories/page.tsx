@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CategoryReportChart } from "@/features/reports/components/category-report-chart";
+import { PrintReportButton } from "@/features/reports/components/print-report-button";
 import { CategoryReportCsvButton } from "@/features/reports/components/report-csv-buttons";
 import {
   currentMonthRange,
@@ -43,7 +44,7 @@ export default async function CategoryReportPage({
   const total = rows.reduce((s, r) => s + r.total, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="printable-report space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
@@ -51,7 +52,7 @@ export default async function CategoryReportPage({
           </h1>
           <p className="text-sm text-muted-foreground">
             {from} → {to} · {baseCurrency} · use{" "}
-            <code className="text-xs">?from=YYYY-MM-DD&to=YYYY-MM-DD</code>
+            <code className="text-xs no-print">?from=YYYY-MM-DD&to=YYYY-MM-DD</code>
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -63,9 +64,10 @@ export default async function CategoryReportPage({
               to={to}
             />
           ) : null}
+          <PrintReportButton />
           <Link
             href="/reports"
-            className="text-sm text-primary underline underline-offset-4"
+            className="text-sm text-primary underline underline-offset-4 no-print"
           >
             All reports
           </Link>
@@ -96,9 +98,11 @@ export default async function CategoryReportPage({
               <CardTitle>Expense breakdown</CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
-              <table className="w-full min-w-[24rem] text-sm">
+              <table className="w-full min-w-[32rem] text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-muted-foreground">
+                    <th className="pb-2 pr-2 font-medium">Icon</th>
+                    <th className="pb-2 pr-2 font-medium">Color</th>
                     <th className="pb-2 pr-4 font-medium">Category</th>
                     <th className="pb-2 pr-4 font-medium">Amount</th>
                     <th className="pb-2 font-medium">Share</th>
@@ -109,6 +113,20 @@ export default async function CategoryReportPage({
                     const pct = total > 0 ? (r.total / total) * 100 : 0;
                     return (
                       <tr key={r.categoryId} className="border-b border-border/60">
+                        <td className="py-2 pr-2 text-center text-lg" aria-hidden={!r.icon}>
+                          {r.icon ?? "—"}
+                        </td>
+                        <td className="py-2 pr-2">
+                          {r.color ? (
+                            <span
+                              className="inline-block size-4 rounded border border-border"
+                              style={{ backgroundColor: r.color }}
+                              title={r.color}
+                            />
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
                         <td className="py-2 pr-4">{r.name}</td>
                         <td className="py-2 pr-4 font-mono tabular-nums">
                           {formatCurrencyCode(r.total, baseCurrency)}

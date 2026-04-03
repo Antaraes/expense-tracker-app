@@ -6,37 +6,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MonthlyReportCharts } from "@/features/reports/components/monthly-report-charts";
 import { PrintReportButton } from "@/features/reports/components/print-report-button";
-import { MonthlyReportCsvButton } from "@/features/reports/components/report-csv-buttons";
-import {
-  getMonthlyIncomeExpenseForKeys,
-  monthKeys,
-  monthKeysBetween,
-} from "@/features/reports/queries.server";
+import { WeeklyReportCharts } from "@/features/reports/components/weekly-report-charts";
+import { getWeeklyIncomeExpense } from "@/features/reports/queries.server";
 import { formatCurrencyCode } from "@/lib/currency";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function MonthlyReportPage({
+export default async function WeeklyReportPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    months?: string;
-    from?: string;
-    to?: string;
-  }>;
+  searchParams: Promise<{ weeks?: string }>;
 }) {
   const sp = await searchParams;
-  const months = Math.min(Math.max(Number(sp.months) || 6, 1), 36);
-  let keys: string[];
-  if (sp.from && sp.to) {
-    keys = monthKeysBetween(sp.from, sp.to);
-    if (keys.length === 0) keys = monthKeys(months);
-  } else {
-    keys = monthKeys(months);
-  }
-
-  const { rows, error } = await getMonthlyIncomeExpenseForKeys(keys);
+  const weeks = Math.min(Math.max(Number(sp.weeks) || 8, 2), 26);
+  const { rows, error } = await getWeeklyIncomeExpense(weeks);
 
   const supabase = await createClient();
   const {
@@ -57,34 +40,30 @@ export default async function MonthlyReportPage({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Monthly overview
+            Weekly overview
           </h1>
           <p className="text-sm text-muted-foreground">
-            {keys[0]} → {keys[keys.length - 1]} · {baseCurrency} ·{" "}
+            Mon–Sun weeks · {baseCurrency} ·{" "}
             <Link
-              href="/reports/monthly?months=6"
-              className="text-primary underline underline-offset-4 no-print"
+              href="/reports/weekly?weeks=8"
+              className="text-primary underline underline-offset-4"
             >
-              6m
+              8w
             </Link>{" "}
             ·{" "}
             <Link
-              href="/reports/monthly?months=12"
-              className="text-primary underline underline-offset-4 no-print"
+              href="/reports/weekly?weeks=12"
+              className="text-primary underline underline-offset-4"
             >
-              12m
-            </Link>{" "}
-            · add{" "}
-            <code className="text-xs no-print">?from=YYYY-MM&to=YYYY-MM</code> for a
-            custom month range.
+              12w
+            </Link>
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <MonthlyReportCsvButton rows={rows} baseCurrency={baseCurrency} />
+        <div className="flex flex-wrap items-center gap-2 no-print">
           <PrintReportButton />
           <Link
             href="/reports"
-            className="text-sm text-primary underline underline-offset-4 no-print"
+            className="text-sm text-primary underline underline-offset-4"
           >
             All reports
           </Link>
@@ -99,13 +78,11 @@ export default async function MonthlyReportPage({
         <>
           <Card className="border-border">
             <CardHeader>
-              <CardTitle>Income vs expenses</CardTitle>
-              <CardDescription>
-                Net = income minus expenses ({baseCurrency}).
-              </CardDescription>
+              <CardTitle>Income vs expenses by week</CardTitle>
+              <CardDescription>Calendar weeks (ISO week starts Monday).</CardDescription>
             </CardHeader>
             <CardContent>
-              <MonthlyReportCharts rows={rows} baseCurrency={baseCurrency} />
+              <WeeklyReportCharts rows={rows} baseCurrency={baseCurrency} />
             </CardContent>
           </Card>
           <Card className="border-border">
@@ -116,7 +93,7 @@ export default async function MonthlyReportPage({
               <table className="w-full min-w-[28rem] text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-muted-foreground">
-                    <th className="pb-2 pr-4 font-medium">Month</th>
+                    <th className="pb-2 pr-4 font-medium">Week</th>
                     <th className="pb-2 pr-4 font-medium">Income</th>
                     <th className="pb-2 pr-4 font-medium">Expenses</th>
                     <th className="pb-2 font-medium">Net</th>
@@ -126,10 +103,8 @@ export default async function MonthlyReportPage({
                   {rows.map((r) => {
                     const net = r.income - r.expense;
                     return (
-                      <tr key={r.month} className="border-b border-border/60">
-                        <td className="py-2 pr-4 font-mono tabular-nums">
-                          {r.month}
-                        </td>
+                      <tr key={r.weekStart} className="border-b border-border/60">
+                        <td className="py-2 pr-4">{r.weekLabel}</td>
                         <td className="py-2 pr-4 font-mono tabular-nums">
                           {formatCurrencyCode(r.income, baseCurrency)}
                         </td>
