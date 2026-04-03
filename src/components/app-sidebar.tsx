@@ -6,7 +6,9 @@ import {
   ArrowLeftRight,
   BarChart3,
   Building2,
+  CalendarClock,
   LayoutDashboard,
+  PiggyBank,
   Settings,
   Tags,
   Wallet,
@@ -29,6 +31,8 @@ const navMain = [
   { title: "Transactions", url: "/transactions", icon: ArrowLeftRight },
   { title: "Accounts", url: "/accounts", icon: Building2 },
   { title: "Reports", url: "/reports", icon: BarChart3 },
+  { title: "Budgets", url: "/budgets", icon: PiggyBank },
+  { title: "Recurring", url: "/recurring", icon: CalendarClock },
   { title: "Categories", url: "/categories", icon: Tags },
   { title: "Settings", url: "/settings", icon: Settings },
 ];

@@ -47,7 +47,7 @@ export default async function SettingsPage() {
         accounts={accounts.data ?? []}
       />
       <ExportSettingsActions />
-      <NotificationPreferences />
+      <NotificationPreferences profile={profile.data} />
       <DangerZoneWipe />
       <ExchangeRatePanel
         currencies={(currencies.data ?? []).map((c) => ({

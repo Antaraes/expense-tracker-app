@@ -26,8 +26,54 @@ export interface Database {
           avatar_url: string | null;
           base_currency: string;
           default_account_id: string | null;
+          push_notifications_enabled: boolean;
+          budget_alerts_enabled: boolean;
+          recurring_reminders_enabled: boolean;
+          budget_alert_threshold_pct: number;
           created_at: string;
           updated_at: string;
+        };
+      };
+      budgets: {
+        Row: {
+          id: string;
+          user_id: string;
+          category_id: string;
+          year_month: string;
+          amount: string;
+          created_at: string;
+          updated_at: string;
+        };
+      };
+      recurring_rules: {
+        Row: {
+          id: string;
+          user_id: string;
+          frequency: "daily" | "weekly" | "monthly";
+          interval_n: number;
+          next_run_date: string;
+          end_date: string | null;
+          type: "expense" | "income";
+          category_id: string;
+          description: string | null;
+          account_id: string;
+          amount: string;
+          currency_code: string;
+          exchange_rate: string;
+          is_active: boolean;
+          last_generated_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+      };
+      user_notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          body: string | null;
+          read_at: string | null;
+          created_at: string;
         };
       };
       accounts: {
@@ -98,6 +144,10 @@ export interface Database {
       wipe_user_finance_data: {
         Args: Record<string, never>;
         Returns: null;
+      };
+      process_my_recurring_rules: {
+        Args: Record<string, never>;
+        Returns: number;
       };
     };
   };

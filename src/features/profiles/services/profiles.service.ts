@@ -14,6 +14,10 @@ export const profilesService = {
     display_name?: string | null;
     base_currency?: string;
     default_account_id?: string | null;
+    push_notifications_enabled?: boolean;
+    budget_alerts_enabled?: boolean;
+    recurring_reminders_enabled?: boolean;
+    budget_alert_threshold_pct?: number;
   }) {
     const supabase = createClient();
     const {
