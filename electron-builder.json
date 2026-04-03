@@ -1,0 +1,14 @@
+{
+  "appId": "com.ultrafinance.desktop",
+  "productName": "UltraFinance",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist-electron/**/*",
+    "package.json"
+  ],
+  "mac": {
+    "category": "public.app-category.finance"
+  }
+}

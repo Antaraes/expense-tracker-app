@@ -1,0 +1,9 @@
+-- Runs after migrations on `supabase db reset` (local). Demo data lives in:
+--   migrations/20260103000011_seed_demo_data.sql
+--
+-- Demo login (seed user + THB/MMK wallets + many transactions + exchange rates):
+--   Email:    demo@ultrafinance.local
+--   Password: DemoSeed2026!
+--
+-- Ledger model needs one row in `accounts` per currency; MMK activity uses the MMK wallet.
+-- Apply new migrations to a linked project: npm run db:push

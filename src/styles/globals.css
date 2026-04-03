@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
+}
+
+:root {
+  --background: 0 0% 98%;
+  --foreground: 240 10% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 10%;
+  --primary: 253 60% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 5% 94%;
+  --secondary-foreground: 240 10% 15%;
+  --muted: 240 5% 92%;
+  --muted-foreground: 240 5% 40%;
+  --accent: 240 5% 94%;
+  --accent-foreground: 240 10% 15%;
+  --destructive: 0 72% 50%;
+  --border: 240 6% 88%;
+  --input: 240 6% 88%;
+  --ring: 253 60% 53%;
+  --success: 156 100% 32%;
+  --warning: 45 97% 45%;
+  --info: 212 100% 45%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 240 5% 96%;
+  --card: 240 10% 7%;
+  --card-foreground: 240 5% 96%;
+  --primary: 253 60% 63%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 10% 12%;
+  --secondary-foreground: 240 5% 96%;
+  --muted: 240 10% 15%;
+  --muted-foreground: 240 10% 55%;
+  --accent: 240 10% 15%;
+  --accent-foreground: 240 5% 96%;
+  --destructive: 0 72% 71%;
+  --border: 240 10% 20%;
+  --input: 240 10% 20%;
+  --ring: 253 60% 63%;
+  --success: 156 100% 42%;
+  --warning: 45 97% 71%;
+  --info: 212 100% 73%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .text-success {
+    color: hsl(var(--success));
+  }
+}
