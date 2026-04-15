@@ -37,6 +37,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # IDE
+.cursor/
 .idea/
 *.swp
 *.swo
