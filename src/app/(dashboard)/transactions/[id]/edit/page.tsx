@@ -38,6 +38,7 @@ export default async function EditTransactionPage({
         </Link>
       </div>
       <NewTransactionForm
+        key={id}
         accounts={data.accounts}
         categories={data.categories}
         baseCurrency={baseCurrency}

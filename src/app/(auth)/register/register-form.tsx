@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,57 +14,47 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-function safeNextPath(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) {
-    return "/dashboard";
-  }
-  return raw;
-}
-
-export function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const nextPath = safeNextPath(searchParams.get("next"));
-
+export function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setPending(true);
     const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
     });
     setPending(false);
-    if (signInError) {
-      setError(signInError.message);
+    if (signUpError) {
+      setError(signUpError.message);
       return;
     }
-    router.replace(nextPath);
-    router.refresh();
+    setInfo("Check your email to confirm your account, then sign in.");
   }
 
   return (
     <Card className="w-full max-w-md border-border">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-semibold tracking-tight">
-          Sign in
+          Create account
         </CardTitle>
         <CardDescription>
-          Use your UltraFinance account credentials.
+          Sign up with email. You will use the same credentials in the desktop app.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="reg-email">Email</Label>
             <Input
-              id="email"
+              id="reg-email"
               name="email"
               type="email"
               autoComplete="email"
@@ -75,13 +64,14 @@ export function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="reg-password">Password</Label>
             <Input
-              id="password"
+              id="reg-password"
               name="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               required
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -91,31 +81,18 @@ export function LoginForm() {
               {error}
             </p>
           ) : null}
+          {info ? (
+            <p className="text-sm text-muted-foreground" role="status">
+              {info}
+            </p>
+          ) : null}
           <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Signing in…" : "Sign in"}
+            {pending ? "Creating…" : "Sign up"}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link
-            href="/register"
-            className="underline underline-offset-4 hover:text-foreground"
-          >
-            Create an account
-          </Link>
-          {" · "}
-          <Link
-            href="/forgot-password"
-            className="underline underline-offset-4 hover:text-foreground"
-          >
-            Forgot password
-          </Link>
-        </p>
-        <p className="mt-2 text-center text-sm text-muted-foreground">
-          <Link
-            href="/"
-            className="underline underline-offset-4 hover:text-foreground"
-          >
-            Back to home
+          <Link href="/login" className="underline underline-offset-4 hover:text-foreground">
+            Already have an account? Sign in
           </Link>
         </p>
       </CardContent>
