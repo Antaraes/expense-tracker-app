@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { DangerZoneWipe } from "@/features/settings/components/danger-zone-wipe";
 import { ExchangeRatesSettings } from "@/features/settings/components/exchange-rates-settings";
 import { SettingsForm } from "@/features/settings/components/settings-form";
-import { getLatestBaseToTargetRates } from "@/features/settings/queries.server";
+import {
+  getBaseToTargetRateHistory,
+  getLatestBaseToTargetRates,
+} from "@/features/settings/queries.server";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function SettingsPage() {
@@ -40,11 +43,11 @@ export default async function SettingsPage() {
 
   const base = profile.base_currency;
   const targetCurrencies = (currencies ?? []).filter((c) => c.code !== base);
-  const initialFx = await getLatestBaseToTargetRates(
-    supabase,
-    base,
-    targetCurrencies.map((c) => c.code)
-  );
+  const codes = targetCurrencies.map((c) => c.code);
+  const [initialFx, initialHistory] = await Promise.all([
+    getLatestBaseToTargetRates(supabase, base, codes),
+    getBaseToTargetRateHistory(supabase, base, codes, 21),
+  ]);
 
   return (
     <div className="space-y-10">
@@ -65,6 +68,7 @@ export default async function SettingsPage() {
         baseCurrency={base}
         targets={targetCurrencies}
         initialRates={initialFx}
+        initialHistory={initialHistory}
       />
 
       <DangerZoneWipe />

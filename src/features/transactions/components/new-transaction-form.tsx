@@ -73,7 +73,7 @@ export function NewTransactionForm({
     initial?.type === "transfer" ? String(initial.transferAmount || "") : ""
   );
 
-  const [rate, setRate] = useState(() =>
+  const [rate, setRate] = useState<number | null>(() =>
     initial && initial.type !== "transfer" ? initial.exchangeRate : 1
   );
 
@@ -131,6 +131,12 @@ export function NewTransactionForm({
         baseCurrency,
         date
       );
+      if (r == null || !Number.isFinite(r) || r <= 0) {
+        toast.error(
+          "Missing FX rate — save a pair in Settings → Exchange rates for this currency and date."
+        );
+        return;
+      }
       const signed = type === "expense" ? -amt : amt;
       const lines = [
         {
@@ -333,7 +339,9 @@ export function NewTransactionForm({
             />
             <p className="text-xs text-muted-foreground">
               Base ({baseCurrency}) rate for this date:{" "}
-              <span className="font-mono tabular-nums">{rate.toFixed(6)}</span>
+              <span className="font-mono tabular-nums">
+                {rate != null ? rate.toFixed(6) : "—"}
+              </span>
             </p>
           </div>
         </>

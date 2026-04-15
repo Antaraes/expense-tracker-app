@@ -39,12 +39,8 @@ import {
 } from "@/components/ui/table";
 import type { TransactionRow } from "@/features/transactions/transaction-list.types";
 import { formatCurrencyCode } from "@/lib/currency";
+import { rowSpotBaseSum } from "@/lib/spot-money";
 import { embedSingle } from "@/lib/utils";
-
-function rowBaseSum(row: TransactionRow): number {
-  const lines = row.transaction_lines ?? [];
-  return lines.reduce((s, l) => s + Number(l.base_amount), 0);
-}
 
 function shortId(id: string): string {
   return `#${id.replace(/-/g, "").slice(0, 8)}`;
@@ -114,6 +110,7 @@ type ColumnVisibility = {
 type TransactionsDataTableProps = {
   data: TransactionRow[];
   baseCurrency: string;
+  ratesToBase?: Record<string, number>;
   page: number;
   pageSize: number;
   onPageChange: (page: number) => void;
@@ -130,6 +127,7 @@ type TransactionsDataTableProps = {
 export function TransactionsDataTable({
   data,
   baseCurrency,
+  ratesToBase,
   page,
   pageSize,
   onPageChange,
@@ -216,7 +214,14 @@ export function TransactionsDataTable({
             {row.original.type === "transfer" ? (
               <span className="text-muted-foreground">—</span>
             ) : (
-              formatCurrencyCode(rowBaseSum(row.original), baseCurrency)
+              formatCurrencyCode(
+                rowSpotBaseSum(
+                  row.original.transaction_lines,
+                  baseCurrency,
+                  ratesToBase
+                ),
+                baseCurrency
+              )
             )}
           </div>
         ),
@@ -297,6 +302,7 @@ export function TransactionsDataTable({
     ],
     [
       baseCurrency,
+      ratesToBase,
       selected,
       onToggleRow,
       onToggleAllPage,

@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { TransactionsDataTable } from "@/features/transactions/components/transactions-data-table";
 import type { TransactionRow } from "@/features/transactions/transaction-list.types";
 import { transactionService } from "@/features/transactions/services/transactions.service";
+import { rowSpotBaseSum } from "@/lib/spot-money";
 import { embedSingle } from "@/lib/utils";
 
 const STORAGE_KEY = "expense-tracker-transactions-table";
@@ -69,9 +70,12 @@ const DEFAULT_VISIBILITY: Record<ColumnId, boolean> = {
 
 const PAGE_SIZE_OPTIONS = [10, 16, 25, 50] as const;
 
-function rowBaseSum(row: TransactionRow): number {
-  const lines = row.transaction_lines ?? [];
-  return lines.reduce((s, l) => s + Number(l.base_amount), 0);
+function rowBaseSum(
+  row: TransactionRow,
+  baseCurrency: string,
+  ratesToBase?: Record<string, number>
+): number {
+  return rowSpotBaseSum(row.transaction_lines, baseCurrency, ratesToBase);
 }
 
 function typeLabel(type: string): string {
@@ -101,7 +105,8 @@ function escapeCsvCell(s: string): string {
 function rowsToCsv(
   rows: TransactionRow[],
   baseCurrency: string,
-  visibility: Record<ColumnId, boolean>
+  visibility: Record<ColumnId, boolean>,
+  ratesToBase?: Record<string, number>
 ): string {
   const headers: string[] = ["ID", "Description"];
   if (visibility.type) headers.push("Type");
@@ -125,7 +130,7 @@ function rowsToCsv(
       cells.push(
         row.type === "transfer"
           ? ""
-          : String(rowBaseSum(row))
+          : String(rowBaseSum(row, baseCurrency, ratesToBase))
       );
     }
     if (visibility.date) cells.push(row.date);
@@ -150,6 +155,8 @@ function downloadCsv(content: string, filename: string) {
 type TransactionsTableProps = {
   rows: TransactionRow[];
   baseCurrency: string;
+  /** Latest FX multipliers from Settings; amounts use spot, else ledger base. */
+  ratesToBase?: Record<string, number>;
   /** When false, skip the built-in H1 (use with `PageHeader` on the route). */
   showHeading?: boolean;
 };
@@ -157,6 +164,7 @@ type TransactionsTableProps = {
 export function TransactionsTable({
   rows,
   baseCurrency,
+  ratesToBase,
   showHeading = true,
 }: TransactionsTableProps) {
   const router = useRouter();
@@ -264,11 +272,11 @@ export function TransactionsTable({
 
   const onExportCsv = useCallback(
     (subset: TransactionRow[]) => {
-      const csv = rowsToCsv(subset, baseCurrency, visibility);
+      const csv = rowsToCsv(subset, baseCurrency, visibility, ratesToBase);
       const stamp = format(new Date(), "yyyy-MM-dd");
       downloadCsv(csv, `transactions-${stamp}.csv`);
     },
-    [baseCurrency, visibility]
+    [baseCurrency, ratesToBase, visibility]
   );
 
   const executeDelete = async () => {
@@ -308,8 +316,9 @@ export function TransactionsTable({
           </li>
           <li>
             <span className="text-foreground">Columns</span> lets you hide fields
-            you do not need; amounts are always in your base currency (
-            {baseCurrency}).
+            you do not need. Amounts are in {baseCurrency} using your latest
+            saved exchange rates (Settings); if a pair is missing, the posted
+            ledger value is used.
           </li>
           <li>
             Open a row (or use the menu) to review or edit; use{" "}
@@ -439,6 +448,7 @@ export function TransactionsTable({
         <TransactionsDataTable
           data={filtered}
           baseCurrency={baseCurrency}
+          ratesToBase={ratesToBase}
           page={page}
           pageSize={pageSize}
           onPageChange={setPage}

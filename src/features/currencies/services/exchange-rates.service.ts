@@ -9,7 +9,7 @@ export const exchangeRatesService = {
     lineCurrency: string,
     baseCurrency: string,
     asOfDate: string
-  ): Promise<number> {
+  ): Promise<number | null> {
     if (lineCurrency === baseCurrency) return 1;
 
     const supabase = createClient();
@@ -41,7 +41,7 @@ export const exchangeRatesService = {
       return 1 / Number(inv.rate);
     }
 
-    return 1;
+    return null;
   },
 
   /**

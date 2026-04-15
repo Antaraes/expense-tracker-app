@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAccountsWithBalances } from "@/features/accounts/queries.server";
+import { buildRatesToBaseMap } from "@/features/currencies/server/fx-latest";
 import { formatCurrencyCode } from "@/lib/currency";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,6 +19,14 @@ export default async function AccountsPage() {
     .eq("id", user.id)
     .maybeSingle();
   const baseCurrency = prof?.base_currency ?? "THB";
+  const today = new Date().toISOString().slice(0, 10);
+  const codes = [...new Set((accounts ?? []).map((a) => a.default_currency))];
+  const ratesToBase = await buildRatesToBaseMap(
+    supabase,
+    baseCurrency,
+    codes,
+    today
+  );
 
   return (
     <div className="space-y-6">
@@ -25,7 +34,7 @@ export default async function AccountsPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Accounts</h1>
           <p className="text-sm text-muted-foreground">
-            Balances from ledger lines · base reporting in {baseCurrency}
+            Native balance per account · {baseCurrency} uses latest rates from Settings
           </p>
         </div>
         <Link
@@ -50,28 +59,41 @@ export default async function AccountsPage() {
         </p>
       ) : (
         <ul className="divide-y divide-border rounded-lg border border-border">
-          {accounts.map((a) => (
-            <li key={a.id}>
-              <Link
-                href={`/accounts/${a.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
-              >
-                <div>
-                  <p className="font-medium">{a.name}</p>
-                  <p className="text-xs capitalize text-muted-foreground">
-                    {a.type} · {a.default_currency}
-                  </p>
-                </div>
-                <div className="text-right font-mono text-sm tabular-nums">
-                  <div>{formatCurrencyCode(Number(a.balance), a.default_currency)}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {baseCurrency}{" "}
-                    {formatCurrencyCode(Number(a.base_balance), baseCurrency)}
+          {accounts.map((a) => {
+            const nat = Number(a.balance);
+            const leg = Number(a.base_balance);
+            const m =
+              a.default_currency === baseCurrency
+                ? 1
+                : ratesToBase[a.default_currency];
+            const spot =
+              a.default_currency === baseCurrency
+                ? nat
+                : m != null && m > 0
+                  ? nat * m
+                  : leg;
+            return (
+              <li key={a.id}>
+                <Link
+                  href={`/accounts/${a.id}`}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
+                >
+                  <div>
+                    <p className="font-medium">{a.name}</p>
+                    <p className="text-xs capitalize text-muted-foreground">
+                      {a.type} · {a.default_currency}
+                    </p>
                   </div>
-                </div>
-              </Link>
-            </li>
-          ))}
+                  <div className="text-right font-mono text-sm tabular-nums">
+                    <div>{formatCurrencyCode(nat, a.default_currency)}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {baseCurrency} {formatCurrencyCode(spot, baseCurrency)}
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

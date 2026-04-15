@@ -1,3 +1,4 @@
+import { buildRatesToBaseMap } from "@/features/currencies/server/fx-latest";
 import { createClient } from "@/lib/supabase/server";
 import {
   currentMonthRange,
@@ -8,40 +9,7 @@ import type {
   CategoryExpenseRow,
   MonthlyRow,
 } from "@/features/reports/queries.server";
-
-async function latestFxToBase(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  fromCurrency: string,
-  baseCurrency: string,
-  onDate: string
-): Promise<number | null> {
-  if (fromCurrency === baseCurrency) return 1;
-  const { data: direct } = await supabase
-    .from("exchange_rates")
-    .select("rate")
-    .eq("from_currency", fromCurrency)
-    .eq("to_currency", baseCurrency)
-    .lte("effective_date", onDate)
-    .order("effective_date", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (direct?.rate != null && Number(direct.rate) > 0) {
-    return Number(direct.rate);
-  }
-  const { data: inv } = await supabase
-    .from("exchange_rates")
-    .select("rate")
-    .eq("from_currency", baseCurrency)
-    .eq("to_currency", fromCurrency)
-    .lte("effective_date", onDate)
-    .order("effective_date", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (inv?.rate != null && Number(inv.rate) > 0) {
-    return 1 / Number(inv.rate);
-  }
-  return null;
-}
+import { rowSpotBaseSum } from "@/lib/spot-money";
 
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -78,30 +46,6 @@ export async function getDashboardSummary() {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  let spotNetWorth = 0;
-  let spotUsedFallback = false;
-  if (balances?.length) {
-    for (const b of balances) {
-      const native = Number(b.balance);
-      const baseStored = Number(b.base_balance);
-      if (b.default_currency === baseCurrency) {
-        spotNetWorth += native;
-        continue;
-      }
-      const rate = await latestFxToBase(
-        supabase,
-        b.default_currency,
-        baseCurrency,
-        today
-      );
-      if (rate != null) {
-        spotNetWorth += native * rate;
-      } else {
-        spotNetWorth += baseStored;
-        spotUsedFallback = true;
-      }
-    }
-  }
 
   const start = startOfMonth(new Date()).toISOString().slice(0, 10);
   const end = endOfMonth(new Date()).toISOString().slice(0, 10);
@@ -113,24 +57,12 @@ export async function getDashboardSummary() {
       id,
       type,
       date,
-      transaction_lines(base_amount)
+      transaction_lines(amount, currency_code, base_amount)
     `
     )
     .gte("date", start)
     .lte("date", end)
     .in("type", ["income", "expense"]);
-
-  let income = 0;
-  let expense = 0;
-  if (monthTx?.length) {
-    for (const t of monthTx) {
-      const lines = t.transaction_lines as Array<{ base_amount: string }>;
-      if (!lines?.length) continue;
-      const sum = lines.reduce((s, l) => s + Number(l.base_amount), 0);
-      if (t.type === "income") income += sum;
-      if (t.type === "expense") expense += Math.abs(sum);
-    }
-  }
 
   const monthRange = currentMonthRange();
   const [{ rows: monthlyBars, error: monthlyErr }, catBlock, recentRes, accountsRes] =
@@ -157,15 +89,91 @@ export async function getDashboardSummary() {
         .order("name"),
     ]);
 
+  const currencyCodes = new Set<string>();
+  currencyCodes.add(baseCurrency);
+  for (const b of balances ?? []) {
+    currencyCodes.add(b.default_currency);
+  }
+  for (const t of monthTx ?? []) {
+    const lines = t.transaction_lines as Array<{ currency_code: string }>;
+    for (const l of lines ?? []) currencyCodes.add(l.currency_code);
+  }
+  for (const r of recentRes.data ?? []) {
+    const lines = r.transaction_lines as Array<{ currency_code: string }>;
+    for (const l of lines ?? []) currencyCodes.add(l.currency_code);
+  }
+  for (const a of accountsRes.data ?? []) {
+    currencyCodes.add(a.default_currency);
+  }
+
+  const ratesToBaseToday = await buildRatesToBaseMap(
+    supabase,
+    baseCurrency,
+    [...currencyCodes],
+    today
+  );
+
+  let spotNetWorth = 0;
+  let spotUsedFallback = false;
+  if (balances?.length) {
+    for (const b of balances) {
+      const native = Number(b.balance);
+      const baseStored = Number(b.base_balance);
+      if (b.default_currency === baseCurrency) {
+        spotNetWorth += native;
+        continue;
+      }
+      const m = ratesToBaseToday[b.default_currency];
+      if (m != null && m > 0) {
+        spotNetWorth += native * m;
+      } else {
+        spotNetWorth += baseStored;
+        spotUsedFallback = true;
+      }
+    }
+  }
+
+  let income = 0;
+  let expense = 0;
+  if (monthTx?.length) {
+    for (const t of monthTx) {
+      const lines = t.transaction_lines as Array<{
+        amount: string;
+        currency_code: string;
+        base_amount: string;
+      }>;
+      if (!lines?.length) continue;
+      const sum = rowSpotBaseSum(lines, baseCurrency, ratesToBaseToday);
+      if (t.type === "income") income += sum;
+      if (t.type === "expense") expense += Math.abs(sum);
+    }
+  }
+
   const categoryMonth: CategoryExpenseRow[] = catBlock.rows;
   const monthlyChart: MonthlyRow[] = monthlyBars;
+
+  const accountRows = accountsRes.data ?? [];
+  const accountBalances = accountRows.map((a) => {
+    const nat = Number(a.balance);
+    const leg = Number(a.base_balance);
+    let spot = nat;
+    if (a.default_currency !== baseCurrency) {
+      const m = ratesToBaseToday[a.default_currency];
+      spot = m != null && m > 0 ? nat * m : leg;
+    }
+    return {
+      ...a,
+      spot_base_balance: String(spot),
+    };
+  });
 
   return {
     baseCurrency,
     netWorth,
     spotNetWorth,
+    ratesToBaseToday,
     spotNetWorthNote: spotUsedFallback
-      ? "Some accounts used ledger base balances where a same-day FX pair was missing."
+      ? "Some accounts used ledger base where no FX pair was found in Settings — add or fetch rates."
       : null,
     monthlyIncome: income,
     monthlyExpense: expense,
@@ -173,7 +181,7 @@ export async function getDashboardSummary() {
     recent: recentRes.data ?? [],
     monthlyChart,
     categoryMonth,
-    accountBalances: accountsRes.data ?? [],
+    accountBalances,
     errors: {
       balances: balErr,
       transactions: txErr,

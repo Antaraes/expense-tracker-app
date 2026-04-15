@@ -10,8 +10,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TransactionDeleteButton } from "@/features/transactions/components/transaction-delete-button";
+import { buildRatesToBaseMap } from "@/features/currencies/server/fx-latest";
 import { getTransactionById } from "@/features/transactions/queries.server";
 import { formatCurrencyCode } from "@/lib/currency";
+import { lineAmountInBaseDisplay } from "@/lib/spot-money";
 import { createClient } from "@/lib/supabase/server";
 import { embedSingle } from "@/lib/utils";
 
@@ -53,6 +55,15 @@ export default async function TransactionDetailPage({
     exchange_rate: string;
     accounts: { id: string; name: string; default_currency: string } | null;
   }>;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const lineCodes = [...new Set(lines.map((l) => l.currency_code))];
+  const ratesToBase = await buildRatesToBaseMap(
+    supabase,
+    baseCurrency,
+    lineCodes,
+    today
+  );
 
   return (
     <div className="space-y-6">
@@ -100,7 +111,7 @@ export default async function TransactionDetailPage({
 
           <div>
             <p className="mb-2 text-xs font-medium text-muted-foreground">
-              Lines ({baseCurrency} base)
+              Lines ({baseCurrency}) — amounts use latest rates from Settings when shown
             </p>
             <ul className="divide-y divide-border rounded-md border border-border">
               {lines.map((line) => {
@@ -109,7 +120,14 @@ export default async function TransactionDetailPage({
                   name: string;
                   default_currency: string;
                 }>(line.accounts);
-                const baseAmt = Number(line.base_amount);
+                const displayBase = lineAmountInBaseDisplay(
+                  line.amount,
+                  line.currency_code,
+                  baseCurrency,
+                  line.base_amount,
+                  ratesToBase
+                );
+                const ledgerBase = Number(line.base_amount);
                 return (
                   <li
                     key={line.id}
@@ -118,7 +136,7 @@ export default async function TransactionDetailPage({
                     <div>
                       <p className="font-medium">{acc?.name ?? "Account"}</p>
                       <p className="text-xs text-muted-foreground">
-                        {line.currency_code} · rate {line.exchange_rate}
+                        {line.currency_code} · posted rate {line.exchange_rate}
                       </p>
                     </div>
                     <div className="text-right font-mono tabular-nums">
@@ -126,8 +144,14 @@ export default async function TransactionDetailPage({
                         {line.amount} {line.currency_code}
                       </div>
                       <div className="text-muted-foreground">
-                        {formatCurrencyCode(baseAmt, baseCurrency)}
+                        {formatCurrencyCode(displayBase, baseCurrency)}
                       </div>
+                      {Math.abs(displayBase - ledgerBase) > 0.005 ? (
+                        <div className="text-[10px] text-muted-foreground">
+                          Ledger at post:{" "}
+                          {formatCurrencyCode(ledgerBase, baseCurrency)}
+                        </div>
+                      ) : null}
                     </div>
                   </li>
                 );

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TransactionsTable } from "@/features/transactions/components/transactions-table";
 import { PageHeader } from "@/components/layout/page-header";
+import { buildRatesToBaseMap } from "@/features/currencies/server/fx-latest";
 import { getTransactionsList } from "@/features/transactions/queries.server";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,20 @@ export default async function TransactionsPage() {
   ]);
 
   const baseCurrency = prof?.base_currency ?? "THB";
+
+  const codes = new Set<string>();
+  for (const r of rows ?? []) {
+    for (const l of r.transaction_lines ?? []) {
+      if (l.currency_code) codes.add(l.currency_code);
+    }
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const ratesToBase = await buildRatesToBaseMap(
+    supabase,
+    baseCurrency,
+    [...codes],
+    today
+  );
 
   return (
     <div className="animate-fade-in-up space-y-8">
@@ -48,6 +63,7 @@ export default async function TransactionsPage() {
         <TransactionsTable
           rows={rows ?? []}
           baseCurrency={baseCurrency}
+          ratesToBase={ratesToBase}
           showHeading={false}
         />
       )}

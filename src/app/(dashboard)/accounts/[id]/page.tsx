@@ -3,6 +3,11 @@ import { notFound } from "next/navigation";
 import { AccountArchiveButton } from "@/features/accounts/components/account-archive-button";
 import { AccountForm } from "@/features/accounts/components/account-form";
 import { getAccountDetail } from "@/features/accounts/queries.server";
+import {
+  buildRatesToBaseMap,
+  spotBaseForAccountBalance,
+} from "@/features/currencies/server/fx-latest";
+import { lineAmountInBaseDisplay } from "@/lib/spot-money";
 import { formatCurrencyCode } from "@/lib/currency";
 import { embedSingle } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
@@ -39,6 +44,24 @@ export default async function AccountDetailPage({
     supabase.from("currencies").select("code, name").eq("is_active", true).order("code"),
   ]);
 
+  const today = new Date().toISOString().slice(0, 10);
+  const lineCodes = [...new Set(lines.map((l) => l.currency_code))];
+  const ratesToBase = await buildRatesToBaseMap(
+    supabase,
+    baseCurrency,
+    lineCodes,
+    today
+  );
+
+  const spotBalance = await spotBaseForAccountBalance(
+    supabase,
+    Number(account.balance),
+    Number(account.base_balance),
+    account.default_currency,
+    baseCurrency,
+    today
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -49,7 +72,7 @@ export default async function AccountDetailPage({
             </h1>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {account.default_currency} account · balances from ledger lines
+            {account.default_currency} account · base uses latest rates from Settings
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -76,8 +99,14 @@ export default async function AccountDetailPage({
           </p>
         </div>
         <div className="rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Base ({baseCurrency})</p>
+          <p className="text-xs text-muted-foreground">
+            Base ({baseCurrency}) — latest FX
+          </p>
           <p className="font-mono text-xl tabular-nums">
+            {formatCurrencyCode(spotBalance, baseCurrency)}
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Ledger sum of line base amounts:{" "}
             {formatCurrencyCode(Number(account.base_balance), baseCurrency)}
           </p>
         </div>
@@ -148,7 +177,13 @@ export default async function AccountDetailPage({
                     </div>
                     <div className="text-muted-foreground">
                       {formatCurrencyCode(
-                        Number(line.base_amount),
+                        lineAmountInBaseDisplay(
+                          String(line.amount),
+                          line.currency_code,
+                          baseCurrency,
+                          String(line.base_amount),
+                          ratesToBase
+                        ),
                         baseCurrency
                       )}
                     </div>

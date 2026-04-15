@@ -101,6 +101,13 @@ export function RecurringClient({
       baseCurrency,
       nextRun
     );
+    if (rate == null || !Number.isFinite(rate) || rate <= 0) {
+      setLoading(false);
+      setMsg(
+        "No FX rate for that date — add or fetch rates in Settings (Exchange rates) first."
+      );
+      return;
+    }
     const { error } = await recurringService.create({
       frequency,
       interval_n: intv,

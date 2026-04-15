@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { DashboardOverview } from "@/features/dashboard/components/dashboard-overview";
 import { getDashboardSummary } from "@/features/dashboard/queries.server";
 import { formatCurrencyCode } from "@/lib/currency";
+import { rowSpotBaseSum } from "@/lib/spot-money";
 import { embedSingle } from "@/lib/utils";
 import { Plus } from "lucide-react";
 
@@ -46,19 +47,19 @@ export default async function DashboardPage() {
       <div className="stagger-fade grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
           <CardHeader className="pb-2">
-            <CardDescription>Net worth (ledger)</CardDescription>
+            <CardDescription>Net worth ({c})</CardDescription>
             <CardTitle className="font-mono text-2xl tabular-nums">
-              {formatCurrencyCode(summary.netWorth, c)}
+              {formatCurrencyCode(summary.spotNetWorth, c)}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
             <p className="text-xs text-muted-foreground">
-              Sum of historical base amounts on each line ({c}).
+              Uses native balances × latest rates from Settings ({c}).
             </p>
             <p className="text-xs font-medium text-foreground">
-              Latest FX mark:{" "}
+              Ledger (historical line base):{" "}
               <span className="font-mono tabular-nums">
-                {formatCurrencyCode(summary.spotNetWorth, c)}
+                {formatCurrencyCode(summary.netWorth, c)}
               </span>
             </p>
             {summary.spotNetWorthNote ? (
@@ -76,7 +77,7 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">From ledger lines</p>
+            <p className="text-xs text-muted-foreground">Latest FX from Settings</p>
           </CardContent>
         </Card>
         <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
@@ -87,7 +88,7 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">Absolute base amounts</p>
+            <p className="text-xs text-muted-foreground">Latest FX from Settings</p>
           </CardContent>
         </Card>
         <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
@@ -137,9 +138,7 @@ export default async function DashboardPage() {
                   currency_code: string;
                   accounts: { name: string } | null;
                 }>;
-                const baseSum = lines?.length
-                  ? lines.reduce((s, l) => s + Number(l.base_amount), 0)
-                  : 0;
+                const baseSum = rowSpotBaseSum(lines, c, summary.ratesToBaseToday);
                 return (
                   <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
                     <div className="min-w-0">

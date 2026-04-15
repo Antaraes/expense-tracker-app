@@ -4,3 +4,10 @@ export type LatestRateRow = {
   effective_date: string | null;
   source: string | null;
 };
+
+/** Points for sparklines (oldest → newest by calendar day). */
+export type RateHistoryPoint = {
+  date: string;
+  rate: number;
+  source: string | null;
+};

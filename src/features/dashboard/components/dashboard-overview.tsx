@@ -19,6 +19,8 @@ export type AccountBalanceStripRow = {
   default_currency: string;
   balance: string;
   base_balance: string;
+  /** Native × latest FX from Settings (falls back to ledger base if pair missing). */
+  spot_base_balance: string;
 };
 
 export function DashboardOverview({
@@ -76,7 +78,7 @@ export function DashboardOverview({
         <CardHeader>
           <CardTitle className="text-base">Account balances</CardTitle>
           <CardDescription>
-            Native balance per account; reporting uses base currency ({baseCurrency}).
+            Native balance per account; {baseCurrency} uses your latest rates from Settings.
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
@@ -95,7 +97,7 @@ export function DashboardOverview({
             <div className="-mx-1 flex gap-3 overflow-x-auto pb-2">
               {accountBalances.map((a) => {
                 const native = Number(a.balance);
-                const base = Number(a.base_balance);
+                const spot = Number(a.spot_base_balance ?? a.base_balance);
                 return (
                   <Link
                     key={a.id}
@@ -107,7 +109,7 @@ export function DashboardOverview({
                       {formatCurrencyCode(native, a.default_currency)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {baseCurrency}: {formatCurrencyCode(base, baseCurrency)}
+                      {baseCurrency}: {formatCurrencyCode(spot, baseCurrency)}
                     </p>
                   </Link>
                 );
