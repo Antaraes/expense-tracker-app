@@ -156,6 +156,7 @@ export function NewTransactionForm({
             notes: notes.trim() || null,
             date,
             lines,
+            expectedUpdatedAt: initial?.expectedUpdatedAt ?? null,
           })
         : transactionService.create({
             type,
@@ -217,6 +218,7 @@ export function NewTransactionForm({
           notes: notes.trim() || null,
           date,
           lines,
+          expectedUpdatedAt: initial?.expectedUpdatedAt ?? null,
         })
       : transactionService.create({
           type: "transfer",

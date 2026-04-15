@@ -94,3 +94,26 @@ export async function getAccountDetail(accountId: string) {
 
   return { account, lines: sorted.slice(0, 200), error: lErr };
 }
+
+export async function getAccountDetailPageExtras(accountId: string) {
+  const supabase = await createClient();
+  const [{ data: accountRow }, { data: currencies }] = await Promise.all([
+    supabase.from("accounts").select("*").eq("id", accountId).maybeSingle(),
+    supabase
+      .from("currencies")
+      .select("code, name")
+      .eq("is_active", true)
+      .order("code"),
+  ]);
+  return { accountRow, currencies: currencies ?? [] };
+}
+
+export async function getProfileBaseAndDefaultAccount(userId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("base_currency, default_account_id")
+    .eq("id", userId)
+    .maybeSingle();
+  return data;
+}

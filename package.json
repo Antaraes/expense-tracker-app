@@ -27,16 +27,26 @@
     "directories": {
       "output": "release"
     },
-    "files": ["dist-electron/**/*", "package.json"],
+    "files": [
+      "dist-electron/**/*",
+      "package.json"
+    ],
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "category": "public.app-category.finance"
     },
     "win": {
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     },
     "linux": {
-      "target": ["AppImage"]
+      "target": [
+        "AppImage"
+      ]
     },
     "publish": {
       "provider": "github"
@@ -61,6 +71,8 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "electron-updater": "^6.6.2",
+    "jspdf": "^2.5.2",
     "lucide-react": "^0.468.0",
     "next": "^15.1.0",
     "next-themes": "^0.4.6",
@@ -72,8 +84,7 @@
     "tailwind-merge": "^2.6.0",
     "vaul": "^1.1.2",
     "zod": "^3.24.1",
-    "zustand": "^5.0.2",
-    "electron-updater": "^6.6.2"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

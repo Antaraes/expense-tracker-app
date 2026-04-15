@@ -53,6 +53,8 @@ export const transactionService = {
       notes: string | null;
       date: string;
       lines: LineInput[];
+      /** When set, update fails if the row changed (doc 13 multi-writer). */
+      expectedUpdatedAt?: string | null;
     }
   ): Promise<{ data: string | null; error: Error | null }> {
     const supabase = createClient();
@@ -71,6 +73,7 @@ export const transactionService = {
       p_notes: params.notes,
       p_date: params.date,
       p_lines: payload,
+      p_expected_updated_at: params.expectedUpdatedAt ?? null,
     });
 
     if (error) return { data: null, error: new Error(error.message) };

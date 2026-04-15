@@ -211,8 +211,19 @@ export interface Database {
           p_notes: string | null;
           p_date: string;
           p_lines: Json;
+          p_expected_updated_at?: string | null;
         };
         Returns: string;
+      };
+      scan_imbalanced_transfers: {
+        Args: Record<string, never>;
+        Returns: {
+          transaction_id: string;
+          user_id: string;
+          imbalance: number;
+          description: string | null;
+          txn_date: string;
+        }[];
       };
       wipe_user_finance_data: {
         Args: Record<string, never>;

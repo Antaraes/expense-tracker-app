@@ -32,6 +32,10 @@ import { Separator } from "@/components/ui/separator";
 import { TransactionsDataTable } from "@/features/transactions/components/transactions-data-table";
 import type { TransactionRow } from "@/features/transactions/transaction-list.types";
 import { transactionService } from "@/features/transactions/services/transactions.service";
+import {
+  downloadQif,
+  transactionsToQif,
+} from "@/lib/export-transactions-qif";
 import { rowSpotBaseSum } from "@/lib/spot-money";
 import { embedSingle } from "@/lib/utils";
 
@@ -279,6 +283,15 @@ export function TransactionsTable({
     [baseCurrency, ratesToBase, visibility]
   );
 
+  const onExportQif = useCallback(
+    (subset: TransactionRow[]) => {
+      const qif = transactionsToQif(subset, baseCurrency, ratesToBase);
+      const stamp = format(new Date(), "yyyy-MM-dd");
+      downloadQif(qif, `transactions-${stamp}.qif`);
+    },
+    [baseCurrency, ratesToBase]
+  );
+
   const executeDelete = async () => {
     if (!pendingDeleteId) return;
     const id = pendingDeleteId;
@@ -322,7 +335,7 @@ export function TransactionsTable({
           </li>
           <li>
             Open a row (or use the menu) to review or edit; use{" "}
-            <span className="text-foreground">Export</span> for a CSV of the
+            <span className="text-foreground">Export</span> for CSV or QIF of the
             current filtered set.
           </li>
         </ul>
@@ -372,6 +385,14 @@ export function TransactionsTable({
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onExportCsv(pageSlice)}>
                 This page only ({pageSlice.length} rows)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Export as QIF</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={() => onExportQif(filtered)}>
+                All matching (excl. transfers) — {filtered.length} rows
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onExportQif(pageSlice)}>
+                This page only — {pageSlice.length} rows
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

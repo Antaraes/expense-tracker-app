@@ -28,6 +28,10 @@ LIMIT 1;
 
 If no rate is found, the user is prompted to enter a manual rate.
 
+### Triangulation (line → base)
+
+When there is no direct or inverse pair between the **line currency** and **reporting base**, the app tries **pivot** legs stored in `exchange_rates` — **USD**, **EUR**, then **GBP** — e.g. `MMK → USD → THB`. If all legs are missing, spot displays still fall back to **ledger `base_amount`** where used.
+
 ---
 
 ## Why Historical Rates Matter

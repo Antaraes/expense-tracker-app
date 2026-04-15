@@ -57,6 +57,8 @@ HAVING ABS(SUM(tl.base_amount)) > 0.01;
 
 ## Offline Sync Conflicts (Future)
 
+For how the **current** app mitigates concurrent writes and how **cron integrity** fits in, see [15-offline-sync-strategy.md](./15-offline-sync-strategy.md).
+
 **Problem:** If the user creates transactions offline on desktop AND mobile, syncing them back can create duplicates or conflicting edits.
 
 **Potential solutions:**

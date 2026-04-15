@@ -9,6 +9,7 @@ import {
 import { CategoryReportChart } from "@/features/reports/components/category-report-chart";
 import { PrintReportButton } from "@/features/reports/components/print-report-button";
 import { CategoryReportCsvButton } from "@/features/reports/components/report-csv-buttons";
+import { CategoryReportPdfButton } from "@/features/reports/components/report-pdf-buttons";
 import {
   currentMonthRange,
   getExpenseByCategory,
@@ -57,12 +58,20 @@ export default async function CategoryReportPage({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {rows.length > 0 ? (
-            <CategoryReportCsvButton
-              rows={rows}
-              baseCurrency={baseCurrency}
-              from={from}
-              to={to}
-            />
+            <>
+              <CategoryReportCsvButton
+                rows={rows}
+                baseCurrency={baseCurrency}
+                from={from}
+                to={to}
+              />
+              <CategoryReportPdfButton
+                rows={rows}
+                baseCurrency={baseCurrency}
+                from={from}
+                to={to}
+              />
+            </>
           ) : null}
           <PrintReportButton />
           <Link

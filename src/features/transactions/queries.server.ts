@@ -43,6 +43,7 @@ export async function getTransactionById(id: string) {
       description,
       notes,
       date,
+      updated_at,
       category_id,
       categories(name, icon, color),
       transaction_lines(

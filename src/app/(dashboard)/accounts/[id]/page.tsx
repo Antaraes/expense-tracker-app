@@ -2,7 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AccountArchiveButton } from "@/features/accounts/components/account-archive-button";
 import { AccountForm } from "@/features/accounts/components/account-form";
-import { getAccountDetail } from "@/features/accounts/queries.server";
+import {
+  getAccountDetail,
+  getAccountDetailPageExtras,
+  getProfileBaseAndDefaultAccount,
+} from "@/features/accounts/queries.server";
 import {
   buildRatesToBaseMap,
   spotBaseForAccountBalance,
@@ -30,19 +34,12 @@ export default async function AccountDetailPage({
   let baseCurrency = "THB";
   let defaultAccountId: string | null = null;
   if (user) {
-    const { data: prof } = await supabase
-      .from("profiles")
-      .select("base_currency, default_account_id")
-      .eq("id", user.id)
-      .maybeSingle();
+    const prof = await getProfileBaseAndDefaultAccount(user.id);
     if (prof?.base_currency) baseCurrency = prof.base_currency;
     defaultAccountId = prof?.default_account_id ?? null;
   }
 
-  const [{ data: accountRow }, { data: currencies }] = await Promise.all([
-    supabase.from("accounts").select("*").eq("id", id).maybeSingle(),
-    supabase.from("currencies").select("code, name").eq("is_active", true).order("code"),
-  ]);
+  const { accountRow, currencies } = await getAccountDetailPageExtras(id);
 
   const today = new Date().toISOString().slice(0, 10);
   const lineCodes = [...new Set(lines.map((l) => l.currency_code))];
@@ -112,7 +109,7 @@ export default async function AccountDetailPage({
         </div>
       </div>
 
-      {accountRow && currencies?.length ? (
+      {accountRow && currencies.length ? (
         <AccountForm
           mode="edit"
           accountId={id}

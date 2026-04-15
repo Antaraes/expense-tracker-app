@@ -68,3 +68,25 @@ export async function getBaseToTargetRateHistory(
 
   return empty;
 }
+
+/** Profile + picklists for the settings page (keeps `page.tsx` free of raw Supabase). */
+export async function getSettingsPageBootstrap(userId: string) {
+  const supabase = await createClient();
+  const [{ data: profile, error: pErr }, { data: currencies }, { data: accounts }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select(
+          "display_name, base_currency, default_account_id, push_notifications_enabled, budget_alerts_enabled, recurring_reminders_enabled, budget_alert_threshold_pct"
+        )
+        .eq("id", userId)
+        .maybeSingle(),
+      supabase.from("currencies").select("code, name").eq("is_active", true).order("code"),
+      supabase
+        .from("accounts")
+        .select("id, name")
+        .eq("is_archived", false)
+        .order("sort_order"),
+    ]);
+  return { profile, currencies: currencies ?? [], accounts: accounts ?? [], profileError: pErr };
+}

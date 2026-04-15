@@ -9,6 +9,7 @@ import {
 import { MonthlyReportCharts } from "@/features/reports/components/monthly-report-charts";
 import { PrintReportButton } from "@/features/reports/components/print-report-button";
 import { MonthlyReportCsvButton } from "@/features/reports/components/report-csv-buttons";
+import { MonthlyReportPdfButton } from "@/features/reports/components/report-pdf-buttons";
 import {
   getMonthlyIncomeExpenseForKeys,
   monthKeys,
@@ -81,6 +82,7 @@ export default async function MonthlyReportPage({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <MonthlyReportCsvButton rows={rows} baseCurrency={baseCurrency} />
+          <MonthlyReportPdfButton rows={rows} baseCurrency={baseCurrency} />
           <PrintReportButton />
           <Link
             href="/reports"

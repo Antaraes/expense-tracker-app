@@ -2,6 +2,8 @@ import { embedSingle } from "@/lib/utils";
 
 export type TransactionFormInitial = {
   type: "expense" | "income" | "transfer";
+  /** For optimistic concurrency on save (ISO timestamptz). */
+  expectedUpdatedAt: string | null;
   date: string;
   description: string;
   notes: string;
@@ -29,6 +31,7 @@ export function parseTransactionForForm(tx: {
   description: string | null;
   notes: string | null;
   date: string;
+  updated_at?: string | null;
   transaction_lines: TxLine[] | null;
 }): TransactionFormInitial {
   const lines = tx.transaction_lines ?? [];
@@ -45,6 +48,7 @@ export function parseTransactionForForm(tx: {
     const amt = Math.abs(Number(out?.amount ?? 0));
     return {
       type: "transfer",
+      expectedUpdatedAt: tx.updated_at ?? null,
       date: tx.date,
       description: tx.description ?? "",
       notes: tx.notes ?? "",
@@ -68,6 +72,7 @@ export function parseTransactionForForm(tx: {
 
   return {
     type: t,
+    expectedUpdatedAt: tx.updated_at ?? null,
     date: tx.date,
     description: tx.description ?? "",
     notes: tx.notes ?? "",
