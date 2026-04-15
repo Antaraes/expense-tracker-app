@@ -35,7 +35,7 @@ export function DashboardOverview({
   return (
     <div className="space-y-6">
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="border-border">
+        <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
           <CardHeader>
             <CardTitle className="text-base">Income vs expenses</CardTitle>
             <CardDescription>Last six calendar months ({baseCurrency})</CardDescription>
@@ -48,7 +48,7 @@ export function DashboardOverview({
             )}
           </CardContent>
         </Card>
-        <Card className="border-border">
+        <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
           <CardHeader>
             <CardTitle className="text-base">Spending by category</CardTitle>
             <CardDescription>This month ({baseCurrency})</CardDescription>
@@ -72,7 +72,7 @@ export function DashboardOverview({
         </Card>
       </div>
 
-      <Card className="border-border">
+      <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
         <CardHeader>
           <CardTitle className="text-base">Account balances</CardTitle>
           <CardDescription>
@@ -100,7 +100,7 @@ export function DashboardOverview({
                   <Link
                     key={a.id}
                     href={`/accounts/${a.id}`}
-                    className="min-w-[11rem] shrink-0 rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:bg-muted/50"
+                    className="min-w-[11rem] shrink-0 rounded-xl border border-border/80 bg-muted/15 px-4 py-3 shadow-sm ring-1 ring-black/[0.02] transition-all hover:bg-muted/35 hover:shadow-md dark:ring-white/[0.06]"
                   >
                     <p className="truncate text-sm font-medium">{a.name}</p>
                     <p className="mt-1 font-mono text-sm tabular-nums">

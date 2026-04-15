@@ -150,9 +150,15 @@ function downloadCsv(content: string, filename: string) {
 type TransactionsTableProps = {
   rows: TransactionRow[];
   baseCurrency: string;
+  /** When false, skip the built-in H1 (use with `PageHeader` on the route). */
+  showHeading?: boolean;
 };
 
-export function TransactionsTable({ rows, baseCurrency }: TransactionsTableProps) {
+export function TransactionsTable({
+  rows,
+  baseCurrency,
+  showHeading = true,
+}: TransactionsTableProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
@@ -314,13 +320,20 @@ export function TransactionsTable({ rows, baseCurrency }: TransactionsTableProps
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
-          <p className="text-sm text-muted-foreground">
-            Ledger entries in {baseCurrency}. {total} shown
-            {search.trim() || typeFilter !== "all" ? " after filters" : ""}.
+        {showHeading ? (
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
+            <p className="text-sm text-muted-foreground">
+              Ledger entries in {baseCurrency}. {total} shown
+              {search.trim() || typeFilter !== "all" ? " after filters" : ""}.
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground sm:flex-1">
+            {total} row{total === 1 ? "" : "s"}
+            {search.trim() || typeFilter !== "all" ? " after filters" : ""} · {baseCurrency}
           </p>
-        </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-[12rem] flex-1 sm:max-w-xs sm:flex-initial">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

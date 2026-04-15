@@ -7,23 +7,32 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/page-header";
 import { DashboardOverview } from "@/features/dashboard/components/dashboard-overview";
 import { getDashboardSummary } from "@/features/dashboard/queries.server";
 import { formatCurrencyCode } from "@/lib/currency";
 import { embedSingle } from "@/lib/utils";
+import { Plus } from "lucide-react";
 
 export default async function DashboardPage() {
   const summary = await getDashboardSummary();
   const c = summary.baseCurrency;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Net worth and this month&apos;s cash flow in {c}.
-        </p>
-      </div>
+    <div className="animate-fade-in-up space-y-10">
+      <PageHeader
+        title="Dashboard"
+        description={`Net worth and this month's cash flow in ${c}.`}
+        actions={
+          <Button asChild size="sm" className="shadow-sm">
+            <Link href="/transactions/new">
+              <Plus className="mr-1.5 size-4" />
+              New transaction
+            </Link>
+          </Button>
+        }
+      />
       {(summary.errors.balances ||
         summary.errors.transactions ||
         summary.errors.monthly ||
@@ -34,8 +43,8 @@ export default async function DashboardPage() {
           policies.
         </p>
       )}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-border">
+      <div className="stagger-fade grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
           <CardHeader className="pb-2">
             <CardDescription>Net worth (ledger)</CardDescription>
             <CardTitle className="font-mono text-2xl tabular-nums">
@@ -59,7 +68,7 @@ export default async function DashboardPage() {
             ) : null}
           </CardContent>
         </Card>
-        <Card className="border-border">
+        <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
           <CardHeader className="pb-2">
             <CardDescription>Income (this month)</CardDescription>
             <CardTitle className="font-mono text-2xl tabular-nums">
@@ -70,7 +79,7 @@ export default async function DashboardPage() {
             <p className="text-xs text-muted-foreground">From ledger lines</p>
           </CardContent>
         </Card>
-        <Card className="border-border">
+        <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
           <CardHeader className="pb-2">
             <CardDescription>Expenses (this month)</CardDescription>
             <CardTitle className="font-mono text-2xl tabular-nums">
@@ -81,7 +90,7 @@ export default async function DashboardPage() {
             <p className="text-xs text-muted-foreground">Absolute base amounts</p>
           </CardContent>
         </Card>
-        <Card className="border-border">
+        <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
           <CardHeader className="pb-2">
             <CardDescription>Savings (this month)</CardDescription>
             <CardTitle className="font-mono text-2xl tabular-nums">
@@ -101,7 +110,7 @@ export default async function DashboardPage() {
         accountBalances={summary.accountBalances}
       />
 
-      <Card className="border-border">
+      <Card className="surface-card border-0 shadow-black/5 dark:shadow-black/40">
         <CardHeader>
           <CardTitle>Recent activity</CardTitle>
           <CardDescription>Latest transactions</CardDescription>
@@ -119,7 +128,7 @@ export default async function DashboardPage() {
               .
             </p>
           ) : (
-            <ul className="divide-y divide-border rounded-md border border-border">
+            <ul className="divide-y divide-border/80 rounded-lg border border-border/70 bg-muted/20">
               {summary.recent.map((row) => {
                 const cat = embedSingle<{ name: string }>(row.categories);
                 const lines = row.transaction_lines as unknown as Array<{

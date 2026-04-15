@@ -67,7 +67,7 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href={homeHref}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-gradient-to-br from-sidebar-primary to-emerald-700 text-sidebar-primary-foreground shadow-md shadow-primary/25 ring-1 ring-white/10 dark:from-emerald-500 dark:to-emerald-800 dark:ring-white/5">
                   <Wallet className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">

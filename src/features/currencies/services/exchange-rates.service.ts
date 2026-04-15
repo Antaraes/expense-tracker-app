@@ -43,4 +43,36 @@ export const exchangeRatesService = {
 
     return 1;
   },
+
+  /**
+   * Upsert `from_currency = baseCurrency` → `to_currency` for a given calendar day
+   * (manual correction or offline quote).
+   */
+  async upsertBaseToTargetRate(input: {
+    baseCurrency: string;
+    toCurrency: string;
+    rate: number;
+    effectiveDate: string;
+  }): Promise<{ error: Error | null }> {
+    const { baseCurrency, toCurrency, rate, effectiveDate } = input;
+    if (baseCurrency === toCurrency) {
+      return { error: new Error("Rates are only needed between different currencies.") };
+    }
+    if (!Number.isFinite(rate) || rate <= 0) {
+      return { error: new Error("Rate must be a positive number.") };
+    }
+    const supabase = createClient();
+    const { error } = await supabase.from("exchange_rates").upsert(
+      {
+        from_currency: baseCurrency,
+        to_currency: toCurrency,
+        rate,
+        effective_date: effectiveDate,
+        source: "manual",
+      },
+      { onConflict: "from_currency,to_currency,effective_date" }
+    );
+    if (error) return { error: new Error(error.message) };
+    return { error: null };
+  },
 };

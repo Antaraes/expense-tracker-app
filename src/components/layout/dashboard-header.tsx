@@ -19,7 +19,7 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4 print:hidden lg:px-6">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-background/80 px-4 shadow-sm shadow-black/[0.03] backdrop-blur-md print:hidden supports-[backdrop-filter]:bg-background/70 dark:shadow-black/20 lg:px-6">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="h-4" />
       <div className="flex min-w-0 flex-1 items-center gap-3">

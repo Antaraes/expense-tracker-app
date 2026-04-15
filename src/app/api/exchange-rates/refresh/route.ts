@@ -36,7 +36,19 @@ export async function POST() {
   let inserted = 0;
   let rateDate = today;
   let rates: Record<string, number> = {};
-  let source = "unknown";
+  let source: string = "unknown";
+
+  async function fetchHostRates(): Promise<Record<string, number> | null> {
+    const hostUrl = `https://api.exchangerate.host/latest?base=${encodeURIComponent(base)}`;
+    const hostRes = await fetch(hostUrl, { next: { revalidate: 0 } });
+    if (!hostRes.ok) return null;
+    const hostJson = (await hostRes.json()) as {
+      success?: boolean;
+      rates?: Record<string, number>;
+    };
+    if (!hostJson.success || !hostJson.rates) return null;
+    return hostJson.rates;
+  }
 
   const frankUrl = `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}&to=${encodeURIComponent(targets.join(","))}`;
   const frankRes = await fetch(frankUrl, { next: { revalidate: 0 } });
@@ -45,30 +57,58 @@ export async function POST() {
       rates?: Record<string, number>;
       date?: string;
     };
-    rates = json.rates ?? {};
+    rates = { ...(json.rates ?? {}) };
     rateDate = json.date ?? today;
     source = "frankfurter";
   } else {
-    const hostUrl = `https://api.exchangerate.host/latest?base=${encodeURIComponent(base)}`;
-    const hostRes = await fetch(hostUrl, { next: { revalidate: 0 } });
-    if (!hostRes.ok) {
+    const hostRates = await fetchHostRates();
+    if (!hostRates) {
       return NextResponse.json(
         { error: "Could not fetch exchange rates from external APIs." },
         { status: 502 }
       );
     }
-    const hostJson = (await hostRes.json()) as {
-      success?: boolean;
-      rates?: Record<string, number>;
-    };
-    if (!hostJson.success || !hostJson.rates) {
-      return NextResponse.json(
-        { error: "Exchange rate API returned no rates." },
-        { status: 502 }
-      );
-    }
-    rates = hostJson.rates;
+    rates = hostRates;
     source = "exchangerate.host";
+  }
+
+  /** Frankfurter (ECB) omits many Asian/emerging pairs — fill from exchangerate.host. */
+  const missing = targets.filter(
+    (t) => rates[t] == null || !Number.isFinite(rates[t]) || rates[t] <= 0
+  );
+  if (missing.length > 0) {
+    const hostRates = await fetchHostRates();
+    if (hostRates) {
+      for (const t of missing) {
+        const r = hostRates[t];
+        if (r != null && Number.isFinite(r) && r > 0) {
+          rates[t] = r;
+        }
+      }
+      if (source === "frankfurter" && missing.some((t) => rates[t] != null)) {
+        source = "frankfurter+exchangerate.host";
+      }
+    }
+  }
+
+  /** If Frankfurter returned nothing useful, fall back entirely to host. */
+  if (
+    Object.keys(rates).length === 0 ||
+    !targets.some((t) => rates[t] != null && rates[t] > 0)
+  ) {
+    const hostRates = await fetchHostRates();
+    if (hostRates) {
+      const merged: Record<string, number> = {};
+      for (const t of targets) {
+        const r = hostRates[t];
+        if (r != null && Number.isFinite(r) && r > 0) merged[t] = r;
+      }
+      if (Object.keys(merged).length > 0) {
+        rates = merged;
+        source = "exchangerate.host";
+        rateDate = today;
+      }
+    }
   }
 
   for (const to of targets) {

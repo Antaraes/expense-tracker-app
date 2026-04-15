@@ -3,10 +3,10 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(240 10.0000% 3.9216%);
+  --background: hsl(220 18% 97%);
+  --foreground: hsl(222 47% 11%);
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(240 10.0000% 3.9216%);
+  --card-foreground: hsl(222 47% 11%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(240 10.0000% 3.9216%);
   --primary: hsl(160.1183 84.0796% 39.4118%);
@@ -19,16 +19,16 @@
   --accent-foreground: hsl(240 5.8824% 10%);
   --destructive: hsl(0 84.2365% 60.1961%);
   --destructive-foreground: hsl(0 0% 98.0392%);
-  --border: hsl(240 5.8824% 90%);
-  --input: hsl(240 5.8824% 90%);
+  --border: hsl(220 14% 90%);
+  --input: hsl(220 14% 90%);
   --ring: hsl(160.1183 84.0796% 39.4118%);
   --chart-1: hsl(160.1183 84.0796% 39.4118%);
   --chart-2: hsl(217.2193 91.2195% 59.8039%);
   --chart-3: hsl(37.6923 92.1260% 50.1961%);
   --chart-4: hsl(258.3117 89.5349% 66.2745%);
   --chart-5: hsl(330.3659 81.1881% 60.3922%);
-  --sidebar: hsl(210.0000 40.0000% 98.0392%);
-  --sidebar-foreground: hsl(215.2941 25.0000% 26.6667%);
+  --sidebar: hsl(220 18% 98%);
+  --sidebar-foreground: hsl(222 25% 26%);
   --sidebar-primary: hsl(160.1183 84.0796% 39.4118%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
   --sidebar-accent: hsl(214.2857 31.8182% 91.3725%);
@@ -38,10 +38,10 @@
   --success: hsl(160.1183 70% 32%);
   --warning: hsl(45 97% 45%);
   --info: hsl(212 100% 45%);
-  --font-sans: Inter, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: Georgia, serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.5rem;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 0.625rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 10px;
@@ -61,8 +61,8 @@
 }
 
 .dark {
-  --background: hsl(240 10.0000% 3.9216%);
-  --foreground: hsl(0 0% 98.0392%);
+  --background: hsl(222 24% 5%);
+  --foreground: hsl(210 40% 98%);
   --card: hsl(240 5.2632% 7.4510%);
   --card-foreground: hsl(0 0% 98.0392%);
   --popover: hsl(240 10.0000% 3.9216%);
@@ -96,10 +96,10 @@
   --success: hsl(160.1183 55% 48%);
   --warning: hsl(45 97% 71%);
   --info: hsl(212 100% 73%);
-  --font-sans: Inter, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: Georgia, serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.5rem;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 0.625rem;
   --shadow-x: 0px;
   --shadow-y: 8px;
   --shadow-blur: 15px;
@@ -186,7 +186,103 @@
   body {
     @apply bg-background text-foreground antialiased;
     letter-spacing: var(--tracking-normal);
+    font-feature-settings: "kern" 1, "liga" 1;
+    text-rendering: optimizeLegibility;
   }
+
+  .font-mono {
+    font-feature-settings: "tnum" 1, "kern" 1;
+  }
+}
+
+/* Atmospheric canvas for main app chrome (depth without cliché purple gradients) */
+.app-canvas {
+  position: relative;
+  isolation: isolate;
+  background-image:
+    radial-gradient(ellipse 100% 80% at 0% 0%, hsl(160 45% 48% / 0.08), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 10%, hsl(217 70% 55% / 0.06), transparent 50%),
+    linear-gradient(180deg, var(--background), var(--background));
+}
+
+.dark .app-canvas {
+  background-image:
+    radial-gradient(ellipse 90% 60% at 15% -10%, hsl(160 50% 38% / 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 45% at 95% 5%, hsl(217 60% 45% / 0.1), transparent 48%),
+    linear-gradient(180deg, var(--background), hsl(222 24% 4%));
+}
+
+.auth-canvas {
+  position: relative;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -20%, hsl(160 40% 45% / 0.12), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 50%, hsl(217 60% 50% / 0.08), transparent 55%),
+    linear-gradient(180deg, var(--background), var(--background));
+}
+
+.dark .auth-canvas {
+  background-image:
+    radial-gradient(ellipse 70% 55% at 50% -15%, hsl(160 45% 35% / 0.18), transparent 58%),
+    linear-gradient(180deg, var(--background), hsl(222 24% 5%));
+}
+
+/* High-impact page load (one beat, not scattered micro-motion) */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.stagger-fade > * {
+  animation: fade-in-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stagger-fade > *:nth-child(1) {
+  animation-delay: 40ms;
+}
+.stagger-fade > *:nth-child(2) {
+  animation-delay: 90ms;
+}
+.stagger-fade > *:nth-child(3) {
+  animation-delay: 140ms;
+}
+.stagger-fade > *:nth-child(4) {
+  animation-delay: 190ms;
+}
+.stagger-fade > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.stagger-fade > *:nth-child(6) {
+  animation-delay: 290ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-fade > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.surface-card {
+  @apply rounded-xl border border-border/80 bg-card shadow-sm transition-shadow duration-200 hover:shadow-md;
 }
 
 @layer utilities {

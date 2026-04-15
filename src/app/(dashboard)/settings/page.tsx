@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DangerZoneWipe } from "@/features/settings/components/danger-zone-wipe";
+import { ExchangeRatesSettings } from "@/features/settings/components/exchange-rates-settings";
 import { SettingsForm } from "@/features/settings/components/settings-form";
+import { getLatestBaseToTargetRates } from "@/features/settings/queries.server";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function SettingsPage() {
@@ -36,12 +38,20 @@ export default async function SettingsPage() {
     );
   }
 
+  const base = profile.base_currency;
+  const targetCurrencies = (currencies ?? []).filter((c) => c.code !== base);
+  const initialFx = await getLatestBaseToTargetRates(
+    supabase,
+    base,
+    targetCurrencies.map((c) => c.code)
+  );
+
   return (
     <div className="space-y-10">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          Profile, reporting currency, and notification preferences.
+          Profile, reporting currency, exchange rates, and notification preferences.
         </p>
       </div>
 
@@ -49,6 +59,12 @@ export default async function SettingsPage() {
         profile={profile}
         currencies={currencies ?? []}
         accounts={accounts ?? []}
+      />
+
+      <ExchangeRatesSettings
+        baseCurrency={base}
+        targets={targetCurrencies}
+        initialRates={initialFx}
       />
 
       <DangerZoneWipe />
