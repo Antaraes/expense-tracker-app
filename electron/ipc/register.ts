@@ -1,7 +1,26 @@
 import fs from "fs/promises";
-import { dialog, ipcMain, shell } from "electron";
+import { Notification, app, dialog, ipcMain, shell } from "electron";
 
 export function registerIpcHandlers(): void {
+  ipcMain.handle("app:getVersion", () => app.getVersion());
+
+  ipcMain.handle(
+    "notification:showNative",
+    async (_event, title: string, body: string) => {
+      if (typeof title !== "string" || typeof body !== "string") {
+        return;
+      }
+      if (!Notification.isSupported()) {
+        return;
+      }
+      const n = new Notification({
+        title: title.slice(0, 256),
+        body: body.slice(0, 500),
+      });
+      n.show();
+    }
+  );
+
   ipcMain.handle("shell:openExternal", async (_event, url: string) => {
     if (typeof url !== "string" || !/^https?:\/\//i.test(url)) {
       return;

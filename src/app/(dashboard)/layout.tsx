@@ -17,14 +17,16 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name")
+    .select("display_name, role")
     .eq("id", user.id)
     .maybeSingle();
 
   return (
     <DashboardShell
+      userId={user.id}
       email={user.email ?? ""}
       displayName={profile?.display_name ?? null}
+      isSuperAdmin={profile?.role === "superadmin"}
     >
       {children}
     </DashboardShell>

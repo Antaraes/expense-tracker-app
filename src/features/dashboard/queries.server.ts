@@ -1,4 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  currentMonthRange,
+  getExpenseByCategory,
+  getMonthlyIncomeExpense,
+} from "@/features/reports/queries.server";
+import type {
+  CategoryExpenseRow,
+  MonthlyRow,
+} from "@/features/reports/queries.server";
 
 async function latestFxToBase(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -123,10 +132,15 @@ export async function getDashboardSummary() {
     }
   }
 
-  const { data: recent } = await supabase
-    .from("transactions")
-    .select(
-      `
+  const monthRange = currentMonthRange();
+  const [{ rows: monthlyBars, error: monthlyErr }, catBlock, recentRes, accountsRes] =
+    await Promise.all([
+      getMonthlyIncomeExpense(6),
+      getExpenseByCategory(monthRange.from, monthRange.to),
+      supabase
+        .from("transactions")
+        .select(
+          `
       id,
       type,
       description,
@@ -134,9 +148,17 @@ export async function getDashboardSummary() {
       categories(name),
       transaction_lines(amount, currency_code, base_amount, accounts(name))
     `
-    )
-    .order("date", { ascending: false })
-    .limit(8);
+        )
+        .order("date", { ascending: false })
+        .limit(8),
+      supabase
+        .from("account_balances")
+        .select("id, name, default_currency, balance, base_balance")
+        .order("name"),
+    ]);
+
+  const categoryMonth: CategoryExpenseRow[] = catBlock.rows;
+  const monthlyChart: MonthlyRow[] = monthlyBars;
 
   return {
     baseCurrency,
@@ -148,7 +170,16 @@ export async function getDashboardSummary() {
     monthlyIncome: income,
     monthlyExpense: expense,
     monthlySavings: income - expense,
-    recent: recent ?? [],
-    errors: { balances: balErr, transactions: txErr },
+    recent: recentRes.data ?? [],
+    monthlyChart,
+    categoryMonth,
+    accountBalances: accountsRes.data ?? [],
+    errors: {
+      balances: balErr,
+      transactions: txErr,
+      monthly: monthlyErr,
+      category: catBlock.error,
+      accounts: accountsRes.error,
+    },
   };
 }

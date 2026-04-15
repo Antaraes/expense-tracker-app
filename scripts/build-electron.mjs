@@ -11,7 +11,7 @@ mkdirSync(outDir, { recursive: true });
 const common = {
   bundle: true,
   platform: "node",
-  external: ["electron"],
+  external: ["electron", "electron-updater"],
   format: "cjs",
   target: "node18",
 };

@@ -1,11 +1,13 @@
 import { app, BrowserWindow, shell } from "electron";
 import path from "path";
 import { registerIpcHandlers } from "./ipc/register";
+import { setupAutoUpdater } from "./updater";
 
 const isDev =
   process.env.NODE_ENV === "development" || !app.isPackaged;
 
-const DEV_URL = "http://localhost:3000";
+const START_URL =
+  process.env.ELECTRON_START_URL?.trim() || "http://localhost:3000";
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -29,11 +31,13 @@ function createWindow(): void {
     return { action: "deny" };
   });
 
+  void win.loadURL(START_URL);
   if (isDev) {
-    void win.loadURL(DEV_URL);
     win.webContents.openDevTools({ mode: "detach" });
-  } else {
-    void win.loadURL(DEV_URL);
+  }
+
+  if (app.isPackaged) {
+    setupAutoUpdater(win);
   }
 }
 
