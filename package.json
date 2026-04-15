@@ -4,7 +4,7 @@
   "private": true,
   "main": "dist-electron/main.cjs",
   "scripts": {
-    "dev": "npm run build:electron && concurrently -k \"next dev -p 3000\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "dev": "npm run build:electron && concurrently -k \"next dev -p 3000\" \"wait-on tcp:3000 && cross-env NODE_ENV=development electron .\"",
     "dev:next": "next dev -p 3000",
     "build": "next build",
     "build:electron": "node scripts/build-electron.mjs",
