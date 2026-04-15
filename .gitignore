@@ -1,16 +1,26 @@
 # dependencies
-node_modules
+node_modules/
 .pnp
 .pnp.js
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # next.js
-.next
-out
-.vercel
+.next/
+out/
+.vercel/
 
 # electron
-dist-electron
-release
+dist-electron/
+release/
+
+# Production / misc build
+build/
+dist/
 
 # env (never commit secrets)
 .env
@@ -27,7 +37,10 @@ yarn-error.log*
 pnpm-debug.log*
 
 # IDE
-.idea
+.idea/
+*.swp
+*.swo
+*.sublime-*
 
 # OS
 .DS_Store
@@ -36,13 +49,16 @@ Thumbs.db
 # typescript
 *.tsbuildinfo
 
+# ESLint
+.eslintcache
+
 # testing / coverage
-coverage
-.nyc_output
+coverage/
+.nyc_output/
 
 # supabase local
-supabase/.branches
-supabase/.temp
+supabase/.branches/
+supabase/.temp/
 supabase/.env
 
 # misc
