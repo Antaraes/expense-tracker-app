@@ -1,6 +1,6 @@
 {
   "name": "ultrafinance",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "main": "dist-electron/main.cjs",
   "scripts": {
@@ -24,6 +24,7 @@
   "build": {
     "appId": "com.ultrafinance.app",
     "productName": "UltraFinance",
+    "icon": "logo.png",
     "directories": {
       "output": "release"
     },

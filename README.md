@@ -34,6 +34,19 @@ Sign in at `/login` with **email** and **password** (Supabase email/password aut
 | `npm run build` | Production Next.js build |
 | `npm run build:desktop` | Web build + Electron packaging |
 
+## Desktop release smoke tests (matrix)
+
+Run on a **clean** machine or VM when possible. Check each platform you ship.
+
+| Step | macOS | Windows | Linux |
+|------|-------|---------|-------|
+| Install from GitHub Release asset | ☐ | ☐ | ☐ |
+| First launch → login → open dashboard | ☐ | ☐ | ☐ |
+| Install older build → relaunch → confirm update path (if using auto-update) | ☐ | ☐ | ☐ |
+| Uninstall / remove app → no orphaned UltraFinance data where the OS expects cleanup | ☐ | ☐ | ☐ |
+
+**Icons:** Repo root `logo.png` is used for **Electron** installers (electron-builder). The **web** UI uses `src/app/icon.png` (copy of the same asset for Next.js metadata).
+
 ## Documentation
 
 Product and architecture notes live under `docs/ultrafinance/`.
