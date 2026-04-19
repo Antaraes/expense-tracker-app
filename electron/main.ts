@@ -7,8 +7,14 @@ import { setupAutoUpdater } from "./updater";
 const isDev =
   process.env.NODE_ENV === "development" || !app.isPackaged;
 
-const START_URL =
-  process.env.ELECTRON_START_URL?.trim() || "http://localhost:3000";
+/** Injected by `scripts/build-electron.mjs` when `ELECTRON_START_URL` is set at build time. */
+declare const __ELECTRON_BAKED_START_URL: string;
+
+const START_URL = (() => {
+  const baked = __ELECTRON_BAKED_START_URL.trim();
+  if (baked.length > 0) return baked;
+  return process.env.ELECTRON_START_URL?.trim() || "http://localhost:3000";
+})();
 
 function isSafeHttpUrl(url: string): boolean {
   try {

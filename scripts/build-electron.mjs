@@ -16,10 +16,16 @@ const common = {
   target: "node18",
 };
 
+/** Inlined into `main.cjs` so Finder/Start launches load Vercel without shell env. */
+const bakedStartUrl = process.env.ELECTRON_START_URL?.trim() ?? "";
+
 await esbuild.build({
   ...common,
   entryPoints: [path.join(root, "electron/main.ts")],
   outfile: path.join(outDir, "main.cjs"),
+  define: {
+    __ELECTRON_BAKED_START_URL: JSON.stringify(bakedStartUrl),
+  },
 });
 
 await esbuild.build({

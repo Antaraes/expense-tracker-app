@@ -41,9 +41,10 @@ jobs:
 
       - name: Build Electron bundle
         run: npm run build:electron
+        env:
+          ELECTRON_START_URL: ${{ vars.ELECTRON_START_URL }}
 
       - name: Publish installers (electron-builder)
         run: npx electron-builder --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ELECTRON_START_URL: ${{ vars.ELECTRON_START_URL }}
